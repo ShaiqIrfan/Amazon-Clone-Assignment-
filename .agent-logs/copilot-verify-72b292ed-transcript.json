@@ -1,0 +1,13 @@
+﻿{
+    "model":  "MAI-Code-1.1-Flash",
+    "messages":  [
+                     {
+                         "content":  "CAPTURE TEST — GitHub Copilot Agent — 8x assignment",
+                         "role":  "user"
+                     },
+                     {
+                         "content":  "Capture test complete. This verification run used the GitHub Copilot Agent capture hook.",
+                         "role":  "assistant"
+                     }
+                 ]
+}

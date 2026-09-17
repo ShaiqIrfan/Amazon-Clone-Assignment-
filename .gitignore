@@ -1,0 +1,13 @@
+# Dependencies and generated Next.js output
+node_modules/
+.next/
+out/
+
+# Local environment files (keep an optional example file trackable)
+.env
+.env.*
+!.env.example
+
+# Local editor and operating system files
+.DS_Store
+*.log

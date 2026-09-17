@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="180" viewBox="0 0 240 180">
+  <rect width="240" height="180" fill="#FCE7F3"/>
+  <circle cx="120" cy="80" r="50" fill="#DB2777"/>
+  <text x="50%" y="95%" font-size="12" text-anchor="middle" fill="#831843">Product</text>
+</svg>
