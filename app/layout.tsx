@@ -3,6 +3,7 @@ import { ReactNode } from 'react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { CartProvider } from '../lib/cart'
+import { DemoAuthProvider } from '../lib/auth'
 
 export const metadata = {
   title: 'NexCart | Everyday shopping',
@@ -13,11 +14,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          <Header />
-          <main className="min-h-[70vh]">{children}</main>
-          <Footer />
-        </CartProvider>
+        <DemoAuthProvider>
+          <CartProvider>
+            <Header />
+            <main className="min-h-[70vh]">{children}</main>
+            <Footer />
+          </CartProvider>
+        </DemoAuthProvider>
       </body>
     </html>
   )

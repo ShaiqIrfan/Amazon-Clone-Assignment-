@@ -1,21 +1,30 @@
 "use client"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../../lib/cart'
+import { useDemoAuth } from '../../lib/auth'
 import { getProductById } from '../../lib/products'
 
 const formatPrice = (value: number) => '$' + value.toFixed(2)
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, clear } = useCart()
+  const { items, isHydrated: isCartHydrated, clear } = useCart()
+  const { isSignedIn, isHydrated } = useDemoAuth()
   const [name, setName] = useState(''); const [address, setAddress] = useState(''); const [city, setCity] = useState(''); const [postal, setPostal] = useState(''); const [phone, setPhone] = useState('')
   const [shippingMethod, setShippingMethod] = useState('standard'); const [paymentMethod, setPaymentMethod] = useState('demo-card'); const [errors, setErrors] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (isHydrated && !isSignedIn) router.replace('/account?next=/checkout')
+  }, [isHydrated, isSignedIn, router])
+
   const lineItems = Object.keys(items).map((id) => ({ product: getProductById(id), qty: items[id].quantity })).filter((item) => item.product)
   const subtotal = lineItems.reduce((total, item) => total + item.product!.price * item.qty, 0)
   const shipping = shippingMethod === 'express' ? 12 : (subtotal >= 100 || subtotal === 0 ? 0 : 5)
   const total = subtotal + shipping
+
   function placeOrder() {
+    if (!isSignedIn) return router.replace('/account?next=/checkout')
     const next: Record<string, string> = {}
     if (!name.trim()) next.name = 'Enter your full name.'
     if (!address.trim()) next.address = 'Enter your address.'
@@ -28,6 +37,10 @@ export default function CheckoutPage() {
     sessionStorage.setItem('lastDemoOrder', JSON.stringify({ ref, items: lineItems.map((item) => ({ title: item.product!.title, qty: item.qty, total: item.product!.price * item.qty })), shipping, total }))
     clear(); router.push('/checkout/confirmation?ref=' + ref)
   }
+
+  if (!isHydrated || !isSignedIn) return <div className="container page"><div className="empty-state"><h2>Sign-in required</h2><p>Redirecting to the NexCart demo sign-in page…</p></div></div>
+  if (!isCartHydrated) return <div className="container page"><p className="eyebrow">Secure demo checkout</p><h1 className="page-title">Checkout</h1><p className="page-subtitle">Loading your saved cart…</p></div>
+
   return <div className="container page">
     <p className="eyebrow">Secure demo checkout</p><h1 className="page-title">Checkout</h1><p className="page-subtitle">Complete your delivery details to place a simulated order.</p>
     <div className="cart-layout"><main className="checkout-form">

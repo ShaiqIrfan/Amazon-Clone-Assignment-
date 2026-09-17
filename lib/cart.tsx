@@ -8,6 +8,7 @@ type Cart = Record<string, CartItem>
 type CartContextValue = {
   items: Cart
   itemCount: number
+  isHydrated: boolean
   add: (id: string, qty?: number) => void
   remove: (id: string) => void
   setQty: (id: string, qty: number) => void
@@ -23,7 +24,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem('cart')
-      if (raw) setItems(JSON.parse(raw))
+      if (raw) {
+        const storedItems = normaliseCart(JSON.parse(raw))
+        setItems((currentItems) => mergeCarts(storedItems, currentItems))
+      }
     } catch (e) {
       setItems({})
     } finally {
@@ -46,7 +50,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clear = () => setItems({})
   const itemCount = useMemo(() => Object.values(items).reduce((total, item) => total + item.quantity, 0), [items])
 
-  return <CartContext.Provider value={{ items, itemCount, add, remove, setQty, clear }}>{children}</CartContext.Provider>
+  return <CartContext.Provider value={{ items, itemCount, isHydrated: hasLoaded, add, remove, setQty, clear }}>{children}</CartContext.Provider>
+}
+
+function normaliseCart(value: unknown): Cart {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  return Object.entries(value as Record<string, unknown>).reduce<Cart>((cart, [id, item]) => {
+    const quantity = typeof item === 'object' && item !== null ? Number((item as CartItem).quantity) : 0
+    if (id && Number.isFinite(quantity) && quantity >= 1) cart[id] = { id, quantity: Math.floor(quantity) }
+    return cart
+  }, {})
+}
+
+function mergeCarts(storedItems: Cart, currentItems: Cart): Cart {
+  const merged = { ...storedItems }
+  Object.values(currentItems).forEach((item) => {
+    merged[item.id] = { id: item.id, quantity: (merged[item.id]?.quantity || 0) + item.quantity }
+  })
+  return merged
 }
 
 export function useCart() {

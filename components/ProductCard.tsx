@@ -21,6 +21,6 @@ export default function ProductCard({ product }: { product: Product }) {
     </Link>
     <div className="rating"><span className="stars" aria-label={'Rated ' + (product.rating ?? 4.5) + ' out of 5'}>★★★★★</span><span>{product.rating ?? 4.5}</span><span>({product.reviewCount ?? 0})</span></div>
     <div className="price-row"><span className="price">${product.price.toFixed(2)}</span>{product.originalPrice && <span className="original-price">${product.originalPrice.toFixed(2)}</span>}</div>
-    <div className="card-footer"><span className="text-link">View details</span><button type="button" className="button add-button" onClick={addToCart} aria-label={'Add ' + product.title + ' to cart'}>{adding ? 'Added' : 'Add to cart'}</button></div>
+    <div className="card-footer"><Link href={'/product/' + product.id} className="text-link">View details</Link><button type="button" className="button add-button" onClick={addToCart} aria-label={'Add ' + product.title + ' to cart'}>{adding ? 'Added' : 'Add to cart'}</button></div>
   </article>
 }
