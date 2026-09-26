@@ -6,6 +6,7 @@ out/
 # Local environment files (keep an optional example file trackable)
 .env
 .env.*
+!.env.local.example
 !.env.example
 
 # Local editor and operating system files

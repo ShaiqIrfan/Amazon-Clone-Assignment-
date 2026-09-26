@@ -1,5 +1,5 @@
 "use client"
-import { use, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getProductById, getRelatedProducts } from '../../../lib/products'
 import QuantitySelector from '../../../components/QuantitySelector'
@@ -11,14 +11,56 @@ type Props = { params: Promise<{ id: string }> }
 
 export default function ProductPage({ params }: Props) {
   const { id } = use(params)
-  const product = getProductById(id) as Product | undefined
   const { add } = useCart()
+  const [product, setProduct] = useState<Product | null>(null)
+  const [related, setRelated] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
+
+  useEffect(() => {
+    let active = true
+
+    async function loadProduct() {
+      setLoading(true)
+      const selectedProduct = await getProductById(id)
+
+      if (!active) return
+
+      if (!selectedProduct) {
+        setProduct(null)
+        setRelated([])
+        setLoading(false)
+        return
+      }
+
+      setProduct(selectedProduct)
+      const relatedProducts = await getRelatedProducts(selectedProduct, 4)
+
+      if (active) {
+        setRelated(relatedProducts)
+        setLoading(false)
+      }
+    }
+
+    loadProduct()
+    return () => {
+      active = false
+    }
+  }, [id])
+
+  if (loading) {
+    return <div className="container page"><p className="eyebrow">Catalog</p><h1 className="page-title">Loading product…</h1><div className="empty-state"><p>Fetching the latest product details from NexCart.</p></div></div>
+  }
+
   if (!product) return <div className="container page"><p className="eyebrow">Catalog</p><h1 className="page-title">Product not found</h1><div className="empty-state"><p>We could not find that product. Browse our departments to keep shopping.</p><Link href="/" className="button">Continue shopping</Link></div></div>
-  const selectedProduct = product
-  const related = getRelatedProducts(selectedProduct, 4)
-  function addToCart() { add(selectedProduct.id, qty); setAdded(true); window.setTimeout(() => setAdded(false), 1200) }
+
+  function addToCart() {
+    if (!product) return
+    add(product.id, qty)
+    setAdded(true)
+    window.setTimeout(() => setAdded(false), 1200)
+  }
   return <div className="container page">
     <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href={'/category/' + product.category}>{product.category}</Link><span>/</span><span>{product.title}</span></nav>
     <div className="product-layout">
